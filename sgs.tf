@@ -25,7 +25,7 @@ resource "aws_security_group_rule" "ssh" {
   protocol          = "tcp"
   type              = "ingress"
   to_port           = 22
-  security_group_id = aws_security_group.asg.id
+  security_group_id = aws_security_group.this.id
 }
 
 resource "aws_security_group_rule" "internal" {

@@ -1,3 +1,13 @@
+data "aws_ssm_parameter" "image_id" {
+  name = "/aws/service/debian/release/bookworm/latest/amd64"
+}
+
+resource "aws_ebs_volume" "this" {
+  availability_zone = var.availability_zone
+  size              = 20
+  type              = "gp3"
+}
+
 resource "aws_launch_template" "this" {
   image_id                             = data.aws_ssm_parameter.image_id.value
   instance_initiated_shutdown_behavior = "terminate"
@@ -7,16 +17,12 @@ resource "aws_launch_template" "this" {
   tags                                 = local.tags
   user_data                            = local.user_data
 
-  dynamic "block_device_mappings" {
-    for_each = local.block_device_mappings
-    content {
-      device_name = block_device_mappings.key
-      ebs {
-        snapshot_id           = lookup(block_device_mappings.value, "snapshot_id", null)
-        volume_size           = lookup(block_device_mappings.value, "volume_size", 20)
-        volume_type           = lookup(block_device_mappings.value, "volume_type", "gp3")
-        delete_on_termination = true
-      }
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      volume_size           = 20
+      volume_type           = "gp3"
+      delete_on_termination = true
     }
   }
 
@@ -49,8 +55,18 @@ resource "aws_launch_template" "this" {
 }
 
 resource "aws_instance" "this" {
+  count = var.deploy ? 1 : 0
+
   launch_template {
     id      = aws_launch_template.this.id
     version = "$Latest"
   }
+}
+
+resource "aws_volume_attachment" "this" {
+  count = var.deploy ? 1 : 0
+
+  device_name = "/dev/xvdb"
+  instance_id = aws_instance.this[0].id
+  volume_id   = aws_ebs_volume.this.id
 }

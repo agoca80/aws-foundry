@@ -23,7 +23,9 @@ resource "aws_alb_target_group" "this" {
 }
 
 resource "aws_alb_target_group_attachment" "this" {
+  count = var.deploy ? 1 : 0
+
   target_group_arn = aws_alb_target_group.this.arn
-  target_id        = aws_instance.this.id
+  target_id        = aws_instance.this[0].id
   port             = local.port
 }
