@@ -1,0 +1,11 @@
+#cloud-config
+
+runcmd:
+  - /bootstrap.sh
+  - touch /bootstrap
+
+write_files:
+  - content: |
+      #!/bin/bash -eux
+
+      touch /bootstrap
