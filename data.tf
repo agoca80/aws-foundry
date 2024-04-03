@@ -1,8 +1,21 @@
-data "aws_vpc" "this" {
+data "aws_ebs_volume" "this" {
   filter {
-    name   = "tag:Environment"
-    values = [local.environment]
+    name   = "tag:Name"
+    values = [var.name]
   }
+
+  filter {
+    name   = "tag:Purpose"
+    values = ["data"]
+  }
+}
+
+data "aws_ssm_parameter" "image_id" {
+  name = "/aws/service/debian/release/bookworm/latest/amd64"
+}
+
+data "aws_ssm_parameter" "vpc_id" {
+  name = format("/environment/%s/vpc_id", var.environment)
 }
 
 data "aws_subnet" "this" {
@@ -15,14 +28,11 @@ data "aws_subnet" "this" {
   }
 }
 
-data "aws_ebs_volume" "this" {
-  filter {
-    name   = "tag:Name"
-    values = [var.name]
-  }
+data "aws_vpc" "this" {
+  id = data.aws_ssm_parameter.vpc_id.value
 
   filter {
-    name   = "tag:Purpose"
-    values = ["data"]
+    name   = "tag:Environment"
+    values = [local.environment]
   }
 }

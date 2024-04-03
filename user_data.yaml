@@ -10,8 +10,12 @@ write_files:
   - content: |
       #!/bin/bash -eux
 
-      apt update -y
-      apt install -y nodejs
+      sudo apt update -y
+      sudo apt install -y nodejs
+      sudo mount /mnt
+      sudo hostname localhost.localdomain
+
+      sudo -u admin node /mnt/${VERSION}/App/resources/app/main.js --dataPath=/mnt/${VERSION}/${WORLD} --port=30000 --headless --noUpdate
 
       touch /bootstrap
     owner: root:root

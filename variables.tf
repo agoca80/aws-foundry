@@ -1,9 +1,9 @@
-variable "availability_zone" {
-  type = string
-}
-
-variable "deploy" {
-  type    = bool
+variable "config" {
+  type = object({
+    deploy  = bool
+    version = string
+    world   = string
+  })
 }
 
 variable "environment" {

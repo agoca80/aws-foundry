@@ -12,7 +12,7 @@ locals {
 resource "aws_security_group" "this" {
   name   = local.name
   tags   = local.tags
-  vpc_id = data.aws_vpc.this.id
+  vpc_id = data.aws_ssm_parameter.vpc_id.value
 
   lifecycle {
     create_before_destroy = true

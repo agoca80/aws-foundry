@@ -1,7 +1,3 @@
-data "aws_ssm_parameter" "image_id" {
-  name = "/aws/service/debian/release/bookworm/latest/amd64"
-}
-
 resource "aws_launch_template" "this" {
   image_id                             = data.aws_ssm_parameter.image_id.value
   instance_initiated_shutdown_behavior = "terminate"
@@ -48,8 +44,32 @@ resource "aws_launch_template" "this" {
   }
 }
 
+resource "aws_alb_target_group" "this" {
+  name     = local.name
+  protocol = "HTTP"
+  port     = local.port
+  vpc_id   = data.aws_vpc.this.id
+
+  health_check {
+    matcher             = "200-299"
+    interval            = 30
+    path                = "/"
+    healthy_threshold   = 5
+    unhealthy_threshold = 2
+    timeout             = 5
+    protocol            = "HTTP"
+    port                = "traffic-port"
+  }
+
+  stickiness {
+    type            = "lb_cookie"
+    cookie_duration = 86400
+    enabled         = true
+  }
+}
+
 resource "aws_instance" "this" {
-  count = var.deploy ? 1 : 0
+  count = local.deploy
 
   launch_template {
     id      = aws_launch_template.this.id
@@ -58,9 +78,17 @@ resource "aws_instance" "this" {
 }
 
 resource "aws_volume_attachment" "this" {
-  count = var.deploy ? 1 : 0
+  count = local.deploy
 
   device_name = "/dev/xvdb"
   instance_id = aws_instance.this[0].id
   volume_id   = data.aws_ebs_volume.this.id
+}
+
+resource "aws_alb_target_group_attachment" "this" {
+  count = local.deploy
+
+  target_group_arn = aws_alb_target_group.this.arn
+  target_id        = aws_instance.this[0].id
+  port             = local.port
 }
