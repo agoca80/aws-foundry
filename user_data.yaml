@@ -1,11 +1,20 @@
 #cloud-config
 
+mounts:
+  - ["/dev/nvme1n1", "/mnt", "ext4", "defaults,nofail", "0", "2"]
+
 runcmd:
   - /bootstrap.sh
-  - touch /bootstrap
 
 write_files:
   - content: |
       #!/bin/bash -eux
 
+      apt update -y
+      apt install -y nodejs
+
       touch /bootstrap
+    owner: root:root
+    path: /bootstrap.sh
+    perms: "0755"
+
