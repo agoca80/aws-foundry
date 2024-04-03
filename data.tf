@@ -14,3 +14,15 @@ data "aws_subnet" "this" {
     Public      = "true"
   }
 }
+
+data "aws_ebs_volume" "this" {
+  filter {
+    name   = "tag:Name"
+    values = [var.name]
+  }
+
+  filter {
+    name   = "tag:Purpose"
+    values = ["data"]
+  }
+}

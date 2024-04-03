@@ -10,6 +10,10 @@ variable "environment" {
   type = string
 }
 
+variable "name" {
+  type = string
+}
+
 variable "tags" {
   default = {}
   type    = map(string)

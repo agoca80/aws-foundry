@@ -2,12 +2,6 @@ data "aws_ssm_parameter" "image_id" {
   name = "/aws/service/debian/release/bookworm/latest/amd64"
 }
 
-resource "aws_ebs_volume" "this" {
-  availability_zone = var.availability_zone
-  size              = 20
-  type              = "gp3"
-}
-
 resource "aws_launch_template" "this" {
   image_id                             = data.aws_ssm_parameter.image_id.value
   instance_initiated_shutdown_behavior = "terminate"
@@ -68,5 +62,5 @@ resource "aws_volume_attachment" "this" {
 
   device_name = "/dev/xvdb"
   instance_id = aws_instance.this[0].id
-  volume_id   = aws_ebs_volume.this.id
+  volume_id   = data.aws_ebs_volume.this.id
 }
